@@ -1,70 +1,77 @@
-<project name="color" basedir="." default="main">
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Color" default="build" basedir=".">
 
-    <property name="src.dir"     value="src"/>
-    <property name="build.dir"   value="build"/>
-    <property name="report.dir"  value="${build.dir}/junitreport"/>
-    <property name="classes.dir" value="${build.dir}/classes"/>
-    <property name="jar.dir"     value="${build.dir}/jar"/>
-    <property name="main-class"  value="color"/>
-    <property name="lib.dir"     value="lib"/>
-    <path id="classpath">
-        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    <property environment="env"/>
+	<property name="env.PORT" value="8077" />
+
+	<echo message="ANT_HOME is set to = ${env.PORT}"/>
+
+    <path id="test.classpath">
+        <pathelement path="build/test"/>
+        <pathelement path="build/main"/>
+        <fileset dir="lib" includes="*.jar" />
     </path>
-    <path id="application" location="${jar.dir}/${ant.project.name}.jar"/>
+
+    <target name="build" description="clean build" depends="clean, test" />
 
     <target name="clean">
-        <delete dir="${build.dir}"/>
+        <delete dir="build"/>
     </target>
 
-    <target name="compile">
-        <mkdir dir="${classes.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" includeantruntime="false"/>
-        <copy todir="${classes.dir}">
-            <fileset dir="${src.dir}" excludes="**/*.java"/>
-        </copy>
+    <target name="init">
+        <mkdir dir="build/main"/>
+        <mkdir dir="build/test"/>
+        <mkdir dir="build/test-report"/>
     </target>
 
-    <target name="junit" depends="jar">
-        <mkdir dir="${report.dir}"/>
-	<junitlauncher>
-    		<classpath refid="classpath" />
-		<test name="colorTests" />
-    		<testclasses outputdir="${output.dir}">
-        		<fileset dir="${classes.dir}">
-            			<include name="**" />
-        		</fileset>
-    		</testclasses>
-	</junitlauncher>
+    <target name="compile" depends="init">
+        <javac destdir="build/main" srcdir="src/main/java" includeantruntime="false"/>
+        <javac destdir="build/test" classpathref="test.classpath" srcdir="src/test/java" includeantruntime="false"/>
     </target>
 
-    <target name="junitreport">
-        <junitreport todir="${report.dir}">
-            <fileset dir="${report.dir}" includes="TEST-*.xml"/>
-            <report todir="${report.dir}"/>
-        </junitreport>
+    <target name="test.junit.start" depends="compile">
+		<java classname="sh.crzy.Color" fork="true" spawn="true" maxmemory="128m">
+			<classpath>
+				<pathelement location="build/main"/>
+			</classpath>
+		</java>
     </target>
 
-    <target name="jar" depends="compile">
-        <mkdir dir="${jar.dir}"/>
-        <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
-            <manifest>
-                <attribute name="Main-Class" value="${main-class}"/>
-            </manifest>
-        </jar>
+    <target name="test.junit.launcher" depends="compile, test.junit.start">
+        <junitlauncher haltOnFailure="false" printSummary="true">
+            <classpath refid="test.classpath"/>
+            <testclasses outputdir="build/test-report">
+                <fileset dir="build/test">
+                    <include name="**/*Tests.class"/>
+                </fileset>
+                <listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+                <listener type="legacy-plain" sendSysOut="true" />
+			<fork />
+             </testclasses>
+       </junitlauncher>
     </target>
 
-    <target name="run" depends="jar">
-        <java fork="true" classname="${main-class}">
-            <classpath>
-                <path refid="classpath"/>
-                <path refid="application"/>
-            </classpath>
+    <target name="test.console.launcher" depends="test.junit.launcher">
+        <java classpathref="test.classpath" classname="org.junit.platform.console.ConsoleLauncher" fork="true" failonerror="true">
+            <arg value="--scan-classpath"/>
+            <arg line="--reports-dir build/test-report"/>
         </java>
     </target>
 
-    <target name="clean-build" depends="clean,jar"/>
+    <target name="test.junit.end" depends="test.console.launcher, test.junit.launcher">
+		<get src="http://localhost:${env.PORT}/kill"
+			dest="build/test-report"
+			verbose="false"
+			usetimestamp="false"/>
+    </target>
 
-    <target name="main" depends="clean,run"/>
+    <target name="download">
+                <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.2/junit-platform-console-standalone-1.7.2-all.jar"
+                        dest="lib"
+                        verbose="false"
+                        usetimestamp="true"/>
+    </target>
+
+    <target name="test" depends="test.junit.end" />
 
 </project>
-
