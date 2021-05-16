@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Color" default="build" basedir=".">
+
+    <property environment="env"/>
+	<property name="port" value="8101" />
+	<echo message="PORT is set to ${port}"/>
+
+    <path id="test.classpath">
+        <pathelement path="build/test"/>
+        <pathelement path="build/main"/>
+        <fileset dir="lib" includes="*.jar" />
+    </path>
+
+    <target name="build" description="clean build" depends="clean, test, jar" />
+
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="init">
+        <mkdir dir="build/main"/>
+        <mkdir dir="build/jar"/>
+        <mkdir dir="build/test"/>
+        <mkdir dir="build/test-report"/>
+    </target>
+
+    <target name="compile" depends="init">
+        <javac destdir="build/main" srcdir="src/main/java" includeantruntime="false"/>
+        <javac destdir="build/test" classpathref="test.classpath" srcdir="src/test/java" includeantruntime="false"/>
+    </target>
+
+    <target name="test.junit.start" depends="compile">
+		<java classname="sh.crzy.Color" fork="true" spawn="true" maxmemory="128m">
+			<classpath>
+				<pathelement location="build/main"/>
+			</classpath>
+		</java>
+    </target>
+
+    <target name="test.junit.launcher" depends="compile, test.junit.start">
+        <junitlauncher haltOnFailure="false" printSummary="true">
+            <classpath refid="test.classpath"/>
+            <testclasses outputdir="build/test-report">
+                <fileset dir="build/test">
+                    <include name="**/*Tests.class"/>
+                </fileset>
+                <listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+                <listener type="legacy-plain" sendSysOut="true" />
+				<fork>
+					<env key="PORT" value="${port}" />
+				</fork>
+             </testclasses>
+       </junitlauncher>
+    </target>
+
+    <target name="test.console.launcher" depends="test.junit.launcher">
+        <java classpathref="test.classpath" classname="org.junit.platform.console.ConsoleLauncher" fork="true" failonerror="true">
+            <arg value="--scan-classpath"/>
+            <arg line="--reports-dir build/test-report"/>
+        </java>
+    </target>
+
+    <target name="test.junit.end" depends="test.console.launcher, test.junit.launcher">
+		<get src="http://localhost:${env.PORT}/kill"
+			dest="build/test-report"
+			verbose="false"
+			usetimestamp="false"/>
+    </target>
+
+    <target name="download">
+        <mkdir dir="lib"/>
+		<get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.2/junit-platform-console-standalone-1.7.2-all.jar"
+                        dest="lib"
+                        verbose="false"
+                        usetimestamp="true"/>
+    </target>
+
+    <target name="test" depends="test.junit.end" />
+
+	<target name="jar" depends="compile" >
+        <mkdir dir="build/jar"/>
+        <jar destfile="build/jar/color.jar" basedir="build/main">
+            <manifest>
+                <attribute name="Main-Class" value="sh.crzy.Color"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar" >
+        <java jar="build/jar/color.jar" fork="true">
+			<env key="PORT" value="${port}" />
+		</java>
+    </target>
+
+</project>
