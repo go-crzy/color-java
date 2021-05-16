@@ -1,26 +1,31 @@
 # A Color API written in Java
 
-This is a very basic sample project with Java/ant to use with
-[go-crzy/crzy](https://github.com/go-crzy/crzy). To test the project, run:
+This is a sample project that implement the Color API with Java/ant. It
+is useful to demonstrate [go-crzy/crzy](https://github.com/go-crzy/crzy). To
+test the project,we assume you have the Java SDK 11+ and Ant 1.10.06+. 
+
+Start by downloading the JUnit 5 console:
 
 ```bash
-export JUNIT5_REPO=https://repo1.maven.org/maven2/org/junit
-cd lib
-curl -LO ${JUNIT5_REPO}/platform/junit-platform-console-standalone/1.7.2/junit-platform-console-standalone-1.7.2-all.jar
-
+ant download
 ```
 
-To build the project, run:
+To test the project, run:
 
 ```bash
-javac color.java
-jar cvmf color.mf color.jar *.class
+ant test
 ```
 
-To run the project, run:
+To build the project, run 
 
 ```bash
-export ADDR=localhost:8080
+ant jar
+```
+
+The artifact is named color.jar and is located in the `build/jar` directory.
+To use it, simply run:
+
+```
+export PORT=8080
 java -jar color.jar
 ```
-

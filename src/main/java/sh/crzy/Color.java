@@ -11,18 +11,24 @@ import com.sun.net.httpserver.HttpServer;
 
 public class Color {
 
-	
     public static void main(String[] args) throws Exception {
-		String PORT = System.getProperty("PORT", "8077");
-		int port = Integer.parseInt(PORT);
-		System.out.println(PORT);
-
+		int port = getPort();
+		System.out.printf("starting on %d\n", port);
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", new Handler());
         server.createContext("/kill", new StopHandler(server));
         server.setExecutor(null);
         server.start();
     }
+
+	public static int getPort() {
+		int port = 8077;
+		String PORT = System.getenv().get("PORT");
+		if (PORT != "") {
+			port = Integer.parseInt(PORT);
+		}
+		return port;
+	}
 
     static class Handler implements HttpHandler {
         @Override

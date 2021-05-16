@@ -2,9 +2,8 @@
 <project name="Color" default="build" basedir=".">
 
     <property environment="env"/>
-	<property name="env.PORT" value="8077" />
-
-	<echo message="ANT_HOME is set to = ${env.PORT}"/>
+	<property name="port" value="8101" />
+	<echo message="PORT is set to ${port}"/>
 
     <path id="test.classpath">
         <pathelement path="build/test"/>
@@ -12,7 +11,7 @@
         <fileset dir="lib" includes="*.jar" />
     </path>
 
-    <target name="build" description="clean build" depends="clean, test" />
+    <target name="build" description="clean build" depends="clean, test, jar" />
 
     <target name="clean">
         <delete dir="build"/>
@@ -20,6 +19,7 @@
 
     <target name="init">
         <mkdir dir="build/main"/>
+        <mkdir dir="build/jar"/>
         <mkdir dir="build/test"/>
         <mkdir dir="build/test-report"/>
     </target>
@@ -46,7 +46,9 @@
                 </fileset>
                 <listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
                 <listener type="legacy-plain" sendSysOut="true" />
-			<fork />
+				<fork>
+					<env key="PORT" value="${port}" />
+				</fork>
              </testclasses>
        </junitlauncher>
     </target>
@@ -66,12 +68,28 @@
     </target>
 
     <target name="download">
-                <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.2/junit-platform-console-standalone-1.7.2-all.jar"
+        <mkdir dir="lib"/>
+		<get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.2/junit-platform-console-standalone-1.7.2-all.jar"
                         dest="lib"
                         verbose="false"
                         usetimestamp="true"/>
     </target>
 
     <target name="test" depends="test.junit.end" />
+
+	<target name="jar" depends="compile" >
+        <mkdir dir="build/jar"/>
+        <jar destfile="build/jar/color.jar" basedir="build/main">
+            <manifest>
+                <attribute name="Main-Class" value="sh.crzy.Color"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar" >
+        <java jar="build/jar/color.jar" fork="true">
+			<env key="PORT" value="${port}" />
+		</java>
+    </target>
 
 </project>

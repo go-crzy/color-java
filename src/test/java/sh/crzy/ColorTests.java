@@ -14,10 +14,16 @@ import java.net.http.HttpResponse;
 public class ColorTests {
 
     @Test
-	@DisplayName("Check GET on /")
-    void test() throws IOException,  InterruptedException {
-		String PORT = System.getProperty("PORT", "8077");
-		System.out.println(PORT);
+	@DisplayName("Check listening PORT is set to 8101")
+    void testPort() throws IOException,  InterruptedException {
+		int PORT = Color.getPort();
+		assertEquals(8101, PORT, "should return 8101");
+    }
+
+	@Test
+	@DisplayName("Check GET on / returns color")
+    void testURL() throws IOException,  InterruptedException {
+		int PORT = Color.getPort();
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:"+PORT))
