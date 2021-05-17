@@ -22,9 +22,9 @@ public class Color {
     }
 
 	public static int getPort() {
-		int port = 8077;
+		int port = 8101;
 		String PORT = System.getenv().get("PORT");
-		if (PORT != "") {
+		if (PORT != null) {
 			port = Integer.parseInt(PORT);
 		}
 		return port;
