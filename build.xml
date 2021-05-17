@@ -61,7 +61,7 @@
     </target>
 
     <target name="test.junit.end" depends="test.console.launcher, test.junit.launcher">
-		<get src="http://localhost:${env.PORT}/kill"
+		<get src="http://localhost:${port}/kill"
 			dest="build/test-report"
 			verbose="false"
 			usetimestamp="false"/>
