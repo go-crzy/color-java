@@ -13,7 +13,7 @@ public class Color {
 
     public static void main(String[] args) throws Exception {
 		int port = getPort();
-		System.out.printf("starting on %d\n", port);
+		System.out.printf("starting on port %d\n", port);
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", new Handler());
         server.createContext("/kill", new StopHandler(server));
