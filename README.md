@@ -1,6 +1,6 @@
 # A Color API written in Java
 
-This is a sample project that implement the Color API with Java/ant. It
+This is a sample project that implements the Color API with Java/ant. It
 is useful to demonstrate [go-crzy/crzy](https://github.com/go-crzy/crzy). To
 test the project, we assume you have the Java SDK 11+ and Ant 1.10.06+. 
 
@@ -29,3 +29,4 @@ To use it, simply run:
 export PORT=8080
 java -jar color.jar
 ```
+
